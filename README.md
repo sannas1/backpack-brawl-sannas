@@ -23,8 +23,10 @@ A won battle gives +1 win, a lost battle costs one life. The run ends with a vic
 ### Shop and backpack
 
 - The shop shows **4 offers**, rolled from the catalog at the start of every round. The same offer may appear more than once.
-- **Buy** pays the price and puts the item into the first free slot of the backpack. A bought offer is marked as sold until the next round.
-- The backpack is a **2×3 grid** (2 columns, 3 rows, 6 slots), and every item takes exactly one slot. A bought item stays in its slot for the whole run. Hover over an item to see its details.
+- **Buy** pays the price and puts the item into the first free slot of the backpack. A bought offer is marked as sold until the next round. Buying is not possible when the backpack is full.
+- **Reroll** (1 🪙) replaces all offers with a new seeded roll.
+- **Sell**: select a backpack item and sell it for half its price (rounded down).
+- The backpack is a **2×3 grid** (2 columns, 3 rows, 6 slots), and every item takes exactly one slot. Select an item and click another slot to move it; on an occupied slot the two items swap. Esc or Cancel ends the selection. Hover over an item to see its details.
 - Only items in the backpack fight. Their position in the grid does not matter.
 
 Shop rolls are driven by a seeded random number generator stored in the run state, so the same seed always produces the same offers.
@@ -54,8 +56,40 @@ The battle screen shows HP and block for both fighters, their items, a timer, an
 | 🛡️ Oak Buckler | 3 | 5 | +4 block |
 | 🍳 Pot Lid | 2 | 3 | +2 block |
 | ⚔️ Spiked Shield | 4 | 6 | 3 damage, +3 block |
+| 🧪 Venom Vial | 3 | 5 | +2 poison |
+| 🐍 Viper Fang | 4 | 4 | 2 damage, +1 poison |
+| 🍄 Toxic Spores | 5 | 7 | +3 poison |
+| 🌿 Healing Herb | 2 | 5 | heal 3 |
+| 🩸 Troll Blood | 4 | 6 | heal 6 |
+| 🔰 Blessed Shield | 5 | 6 | +3 block, heal 3 |
+| 🔥 Fire Torch | 3 | 3 | 2 damage |
+| 🔨 Magma Hammer | 5 | 5 | 5 damage |
+| 💣 Fire Bomb | 4 | 7 | 7 damage |
 
-Items have no sets and no other effects. The "How it works" panel in the shop summarises these rules in the game itself.
+### Status effects
+
+| Status | How it works |
+|---|---|
+| ☠️ Poison | Every 2 ticks (1 s): 1 HP per stack. Ignores block, never wears off. |
+| 💚 Heal | Restores own HP, never above max HP. |
+| 🔥 Burn | Every tick (0.5 s): 1 damage per stack, block absorbs it first, then −1 stack. |
+
+Order of one tick: poison and burn first, then items fire (player first).
+
+### Item sets (bonus with 2+ items of a set, for player and opponents)
+
+| Set | Items | Bonus |
+|---|---|---|
+| 🔥 Fire | Fire Torch, Magma Hammer, Fire Bomb | Every Fire item that fires also adds 4 burn to the enemy |
+| 🏰 Guardian | Oak Buckler, Pot Lid, Spiked Shield | Start every battle with 6 block |
+
+### Saving
+
+The run is saved in `localStorage` after every action. Refresh during a search → back to the shop, search again (same opponent). Refresh during a battle → the replay jumps to the end and the result is applied once. Broken or outdated saves are discarded.
+
+### Hall of fame
+
+At the end of a run you can enter your name. The page `/hall-of-fame` lists the best runs: victories first, then more wins, then fewer rounds. The "How it works" panel in the shop summarises these rules in the game itself.
 
 ## Current starter features
 
@@ -69,7 +103,7 @@ Items have no sets and no other effects. The "How it works" panel in the shop su
 - Tooltips and a rules panel explaining every mechanic.
 - A responsive React interface styled with Tailwind CSS.
 
-The starter does **not** include any automated tests. Vitest is installed and configured; add your own tests as `*.test.ts` files next to the code they test.
+Automated tests (Vitest) live next to the code they test (`src/*.test.ts`, `server/*.test.js`). Our quality goals and a manual test checklist are in [docs/QUALITY.md](docs/QUALITY.md), the development diary is [DIARY.md](DIARY.md).
 
 ## Run locally
 
@@ -88,7 +122,7 @@ The web app runs at `http://localhost:5174`; its API runs at `http://localhost:4
 | `pnpm server` | Start only the API on port 4200 |
 | `pnpm build` | Type-check and create a production frontend build |
 | `pnpm lint` | Run ESLint over the project |
-| `pnpm test` | Run all Vitest tests once (there are none yet) |
+| `pnpm test` | Run all Vitest tests once |
 | `pnpm preview` | Preview a previously created production build |
 
 ## API
@@ -111,9 +145,11 @@ Game rules live in plain TypeScript modules that do not depend on React. Every r
 - `src/run.ts` contains the run rules: starting values, buying, round progression and win/loss.
 - `src/battle.ts` turns item lists into fighters and contains the battle simulation (`simulateBattle`).
 - `src/game.ts` contains the phase transitions of a run (`shop → searching → battle → shop … → finished`), the replay steps and the mapping from phase to page.
+- `src/sets.ts` contains the item sets, their bonus values and `activeSets`.
+- `src/save.ts` saves, loads and validates the game in `localStorage`.
 - `src/rules.ts` builds the rule explanations and tooltips from the game constants.
 - `src/api.ts` contains the opponent HTTP request.
 - `src/state/` holds the game state for all pages (`GameProvider`, `useGame`) and `RequireRoute`, which redirects every page to the one matching the current phase.
 - `src/pages/` contains one component per screen; `src/App.tsx` defines the routes.
 - `src/components/` contains the presentational parts: run header, shop, backpack, item card, rules panel, fight bar, battle view and end-of-run screen.
-- `server/index.js` implements the local API; `server/opponents.js` contains the opponent table.
+- `server/index.js` implements the local API; `server/opponents.js` contains the opponent table; `server/hallOfFame.js` stores and validates hall-of-fame runs.
