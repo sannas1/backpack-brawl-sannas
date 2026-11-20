@@ -11,6 +11,8 @@
   --color-gold: #e3b04b;
   --color-life: #d6534a;
   --color-block: #a8a29e;
+  --color-poison: #8bc34a;
+  --color-heal: #66d9a0;
 }
 
 @layer base {

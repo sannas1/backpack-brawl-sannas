@@ -1,5 +1,4 @@
 import { TICK_SECONDS, MAX_TICKS } from "../battle";
-import { getItem } from "../items";
 import { STATUS_HELP } from "../rules";
 import type { BattleEvent, BattleEventKind, BattleReplay, Fighter, FighterSnapshot, Side } from "../types";
 
@@ -91,13 +90,16 @@ export function BattleView({ battle, done, continueLabel, onSkip, onContinue }: 
 /** Hero actions | time | enemy actions. */
 const LOG_ROW = "grid grid-cols-[1fr_auto_1fr] items-start gap-2";
 
-/** Text colour per event: damage red, everything else neutral. */
+/** Text colour per event: damage red, poison green, heal light green, everything else neutral. */
 const EVENT_COLOUR: Partial<Record<BattleEventKind, string>> = {
   damage: "text-life",
+  poison: "text-poison",
+  "poison-tick": "text-poison",
+  heal: "text-heal",
 };
 
 function LogLine({ event }: { event: BattleEvent }) {
-  const icon = getItem(event.itemId).icon;
+  const { icon } = event;
   const byPlayer = event.source === "player";
   const text = (
     <span className={`flex gap-1.5 ${byPlayer ? "" : "flex-row-reverse text-right"} ${EVENT_COLOUR[event.kind] ?? ""}`}>
@@ -123,7 +125,7 @@ interface FighterPanelProps {
 }
 
 function FighterPanel({ side, icon, fighter, snapshot }: FighterPanelProps) {
-  const { hp, maxHp, block } = snapshot;
+  const { hp, maxHp, block, poison } = snapshot;
   const knockedOut = hp <= 0;
 
   return (
@@ -140,6 +142,12 @@ function FighterPanel({ side, icon, fighter, snapshot }: FighterPanelProps) {
 
       <Bar label="HP" value={hp} max={maxHp} text={`${hp} / ${maxHp}`} colour="bg-life" help={STATUS_HELP.hp} />
       <Bar label="Block" value={block} max={maxHp} text={`🛡️ ${block}`} colour="bg-block" help={STATUS_HELP.block} />
+
+      <ul className="flex flex-wrap gap-2 text-sm" aria-label="Status effects">
+        <li title={STATUS_HELP.poison} className={`cursor-help rounded px-2 py-0.5 ${poison > 0 ? "bg-poison/20 text-poison" : "bg-ink/50 text-muted"}`}>
+          ☠️ Poison {poison}
+        </li>
+      </ul>
 
       <ul className="flex flex-wrap gap-1" aria-label="Items">
         {fighter.items.map((item, index) => (
