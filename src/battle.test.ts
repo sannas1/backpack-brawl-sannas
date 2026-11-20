@@ -1,14 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { buildFighter, POISON_INTERVAL, simulateBattle } from "./battle";
+import { buildFighter, buildOpponentFighter, POISON_INTERVAL, simulateBattle } from "./battle";
+import { activeSets, FIRE_BURN_STACKS, GUARDIAN_START_BLOCK } from "./sets";
 import type { Fighter } from "./types";
 
 /** A fighter with one custom item, so each test controls the numbers exactly. */
 function fighter(name: string, maxHp: number, effects: Fighter["items"][number]["effects"], cooldown = 1): Fighter {
-  return { name, maxHp, items: [{ itemId: "test", name: `${name}'s item`, icon: "❔", cooldown, effects }] };
+  return { name, maxHp, sets: [], items: [{ itemId: "test", name: `${name}'s item`, icon: "❔", cooldown, effects }] };
 }
 
 /** An opponent that does nothing for the whole battle. */
-const dummy = (maxHp = 1000): Fighter => ({ name: "Dummy", maxHp, items: [] });
+const dummy = (maxHp = 1000): Fighter => ({ name: "Dummy", maxHp, items: [], sets: [] });
 
 describe("battle basics", () => {
   it("is deterministic", () => {
@@ -54,5 +55,41 @@ describe("B3 heal", () => {
     // After tick 2: +3 heal then -4 → 35.
     expect(result.frames[1].player.hp).toBe(36);
     expect(result.frames[2].player.hp).toBe(35);
+  });
+});
+
+describe("B4 sets", () => {
+  it("activates a set bonus with 2 or more items of the set", () => {
+    expect(activeSets(["fire-torch"])).toEqual([]);
+    expect(activeSets(["fire-torch", "fire-bomb"])).toEqual(["fire"]);
+    expect(activeSets(["oak-buckler", "pot-lid", "fire-torch", "fire-torch"])).toEqual(["fire", "guardian"]);
+  });
+
+  it("Guardian: starts the battle with extra block, for opponents too", () => {
+    const opponent = buildOpponentFighter({ id: "x", name: "X", icon: "❔", hp: 30, round: 1, items: ["oak-buckler", "pot-lid"] });
+    const result = simulateBattle(fighter("Hero", 40, {}, 100), opponent);
+    expect(result.frames[0].opponent.block).toBe(GUARDIAN_START_BLOCK);
+    expect(result.frames[0].player.block).toBe(0);
+  });
+
+  it("Fire: no burn with only one Fire item", () => {
+    const result = simulateBattle(buildFighter(["fire-torch"], 40, "Hero"), dummy());
+    expect(result.events.some((e) => e.kind === "burn")).toBe(false);
+  });
+
+  it("Fire: burn hurts every tick, is absorbed by block and decays", () => {
+    // Fire Torch (cooldown 3) + Fire Bomb (cooldown 7): first burn at tick 3.
+    const hero = buildFighter(["fire-torch", "fire-bomb"], 40, "Hero");
+    const result = simulateBattle(hero, dummy());
+    const burns = result.events.filter((e) => e.kind === "burn-tick");
+    expect(result.frames[3].opponent.burn).toBe(FIRE_BURN_STACKS);
+    expect(burns[0].tick).toBe(4);
+    expect(burns[0].amount).toBe(FIRE_BURN_STACKS);
+    expect(result.frames[4].opponent.burn).toBe(FIRE_BURN_STACKS - 1); // decayed by 1
+
+    // Against block, burn is absorbed first.
+    const wall: Fighter = { ...dummy(), sets: ["guardian"] };
+    const blocked = simulateBattle(hero, wall).events.find((e) => e.kind === "burn-tick")!;
+    expect(blocked.message).toContain("blocked");
   });
 });

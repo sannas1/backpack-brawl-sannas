@@ -7,6 +7,9 @@ export interface ItemEffects {
   heal?: number;
 }
 
+/** Item sets; collecting 2 items of a set activates its bonus (see sets.ts). */
+export type SetId = "fire" | "guardian";
+
 export interface ItemDef {
   id: string;
   name: string;
@@ -15,6 +18,7 @@ export interface ItemDef {
   /** Cooldown in battle ticks (1 tick = 0.5 s). */
   cooldown: number;
   effects: ItemEffects;
+  set?: SetId;
 }
 
 /** A concrete item the player owns; several instances may share one `itemId`. */
@@ -60,10 +64,11 @@ export interface FighterSnapshot {
   maxHp: number;
   block: number;
   poison: number;
+  burn: number;
 }
 
-/** `poison-tick` is the damage a poisoned fighter takes from its stacks. */
-export type BattleEventKind = "damage" | "block" | "poison" | "heal" | "poison-tick";
+/** `poison-tick` / `burn-tick` are the damage a fighter takes from its stacks. */
+export type BattleEventKind = "damage" | "block" | "poison" | "heal" | "burn" | "poison-tick" | "burn-tick";
 
 export interface BattleEvent {
   tick: number;
@@ -100,6 +105,7 @@ export interface FighterItem {
   icon: string;
   cooldown: number;
   effects: ItemEffects;
+  set?: SetId;
 }
 
 /** Everything `simulateBattle` needs to know about one side. */
@@ -107,6 +113,8 @@ export interface Fighter {
   name: string;
   maxHp: number;
   items: FighterItem[];
+  /** Sets whose bonus is active for this fighter. */
+  sets: SetId[];
 }
 
 /** A simulated battle being replayed frame by frame. */

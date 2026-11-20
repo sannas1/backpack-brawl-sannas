@@ -1,5 +1,6 @@
 import { TICK_SECONDS, MAX_TICKS } from "../battle";
 import { STATUS_HELP } from "../rules";
+import { SETS } from "../sets";
 import type { BattleEvent, BattleEventKind, BattleReplay, Fighter, FighterSnapshot, Side } from "../types";
 
 interface BattleViewProps {
@@ -96,6 +97,8 @@ const EVENT_COLOUR: Partial<Record<BattleEventKind, string>> = {
   poison: "text-poison",
   "poison-tick": "text-poison",
   heal: "text-heal",
+  burn: "text-burn",
+  "burn-tick": "text-burn",
 };
 
 function LogLine({ event }: { event: BattleEvent }) {
@@ -125,7 +128,7 @@ interface FighterPanelProps {
 }
 
 function FighterPanel({ side, icon, fighter, snapshot }: FighterPanelProps) {
-  const { hp, maxHp, block, poison } = snapshot;
+  const { hp, maxHp, block, poison, burn } = snapshot;
   const knockedOut = hp <= 0;
 
   return (
@@ -147,12 +150,30 @@ function FighterPanel({ side, icon, fighter, snapshot }: FighterPanelProps) {
         <li title={STATUS_HELP.poison} className={`cursor-help rounded px-2 py-0.5 ${poison > 0 ? "bg-poison/20 text-poison" : "bg-ink/50 text-muted"}`}>
           ☠️ Poison {poison}
         </li>
+        <li title={STATUS_HELP.burn} className={`cursor-help rounded px-2 py-0.5 ${burn > 0 ? "bg-burn/20 text-burn" : "bg-ink/50 text-muted"}`}>
+          🔥 Burn {burn}
+        </li>
       </ul>
+
+      {fighter.sets.length > 0 && (
+        <ul className="flex flex-col gap-0.5 text-xs text-gold" aria-label="Active set bonuses">
+          {fighter.sets.map((set) => (
+            <li key={set} title={SETS[set].bonus} className="cursor-help">
+              {SETS[set].icon} {SETS[set].name} set active: {SETS[set].bonus}
+            </li>
+          ))}
+        </ul>
+      )}
 
       <ul className="flex flex-wrap gap-1" aria-label="Items">
         {fighter.items.map((item, index) => (
-          <li key={index} title={item.name} className="rounded bg-ink/50 px-1.5 py-0.5 text-xl">
+          <li key={index} title={item.set ? `${item.name} (${SETS[item.set].name} set)` : item.name} className="relative rounded bg-ink/50 px-1.5 py-0.5 text-xl">
             {item.icon}
+            {item.set && (
+              <span className="absolute -right-1 -bottom-1 text-xs" aria-label={`${SETS[item.set].name} set`}>
+                {SETS[item.set].icon}
+              </span>
+            )}
           </li>
         ))}
       </ul>

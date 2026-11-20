@@ -3,6 +3,7 @@ import { TICK_SECONDS } from "../battle";
 import { describeEffects } from "../items";
 import { COOLDOWN_HELP, EFFECT_HELP } from "../rules";
 import type { ItemDef } from "../types";
+import { SetBadge } from "./SetBadge";
 
 interface ItemCardProps {
   item: ItemDef;
@@ -19,6 +20,7 @@ export function ItemCard({ item, children }: ItemCardProps) {
         </span>
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-display font-bold">{item.name}</h3>
+          {item.set && <SetBadge set={item.set} />}
         </div>
       </div>
       <ul className="flex flex-wrap gap-x-3 gap-y-1 text-sm">

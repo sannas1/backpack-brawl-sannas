@@ -1,4 +1,5 @@
 import { getItem } from "./items";
+import { activeSets, FIRE_BURN_STACKS, GUARDIAN_START_BLOCK } from "./sets";
 import { itemIdsOf } from "./shop";
 import type { Backpack, BattleEvent, BattleResult, Fighter, FighterItem, FighterSnapshot, Opponent, Side } from "./types";
 
@@ -13,13 +14,18 @@ export const POISON_INTERVAL = 2;
 /** HP lost per poison stack each time poison hurts. Poison ignores block and never wears off. */
 export const POISON_DAMAGE_PER_STACK = 1;
 
+/** Burn hurts every tick (= every 0.5 s), so twice as often as poison. Block absorbs it first. */
+export const BURN_DAMAGE_PER_STACK = 1;
+/** Burn stacks lost after each burn tick, until it wears off. */
+export const BURN_DECAY = 1;
+
 /** Turns a list of item ids into a fighter with the catalog values of each item. */
 export function buildFighter(itemIds: string[], baseHp: number, name = "Fighter"): Fighter {
   const items: FighterItem[] = itemIds.map((id) => {
     const def = getItem(id);
-    return { itemId: def.id, name: def.name, icon: def.icon, cooldown: def.cooldown, effects: { ...def.effects } };
+    return { itemId: def.id, name: def.name, icon: def.icon, cooldown: def.cooldown, effects: { ...def.effects }, set: def.set };
   });
-  return { name, maxHp: baseHp, items };
+  return { name, maxHp: baseHp, items, sets: activeSets(itemIds) };
 }
 
 /** The player's fighter: every backpack item and the hero's base HP. */
@@ -36,6 +42,7 @@ interface FighterState {
   hp: number;
   block: number;
   poison: number;
+  burn: number;
   /** Ticks each item has charged towards its cooldown. */
   charge: number[];
 }
@@ -49,6 +56,7 @@ const snapshot = (s: FighterState): FighterSnapshot => ({
   maxHp: s.fighter.maxHp,
   block: s.block,
   poison: s.poison,
+  burn: s.burn,
 });
 
 const isDown = (s: FighterState) => s.hp <= 0;
@@ -58,7 +66,7 @@ const isDown = (s: FighterState) => s.hp <= 0;
  * the same result.
  *
  * Each tick:
- * 1. Status effects: every POISON_INTERVAL ticks, poisoned fighters lose HP (player first).
+ * 1. Status effects (player first): every POISON_INTERVAL ticks poison hurts; every tick burn hurts and decays.
  * 2. Each fighter charges all items by one tick; items whose charge reaches their cooldown fire.
  * 3. Fired items resolve (player first, then opponent). Both sides fire "simultaneously":
  *    which items fire is decided before any effect is applied.
@@ -110,15 +118,24 @@ export function simulateBattle(player: Fighter, opponent: Fighter): BattleResult
 }
 
 function initState(fighter: Fighter): FighterState {
-  return { fighter, hp: fighter.maxHp, block: 0, poison: 0, charge: fighter.items.map(() => 0) };
+  // Guardian set bonus: start with some block.
+  const block = fighter.sets.includes("guardian") ? GUARDIAN_START_BLOCK : 0;
+  return { fighter, hp: fighter.maxHp, block, poison: 0, burn: 0, charge: fighter.items.map(() => 0) };
 }
 
-/** Damage over time at the start of a tick. Poison ignores block. */
+/** Damage over time at the start of a tick. Poison ignores block, burn does not. */
 function applyStatusEffects(self: FighterState, side: Side, tick: number, emit: Emit) {
   if (self.poison > 0 && tick % POISON_INTERVAL === 0) {
     const damage = self.poison * POISON_DAMAGE_PER_STACK;
     self.hp -= damage;
     emit({ source: side, target: side, kind: "poison-tick", amount: damage, icon: "☠️", message: `${self.fighter.name} takes ${damage} poison damage` });
+  }
+  if (self.burn > 0) {
+    const damage = self.burn * BURN_DAMAGE_PER_STACK;
+    const absorbed = hitThroughBlock(self, damage);
+    self.burn = Math.max(0, self.burn - BURN_DECAY);
+    const note = absorbed > 0 ? ` (${absorbed} blocked)` : "";
+    emit({ source: side, target: side, kind: "burn-tick", amount: damage, icon: "🔥", message: `${self.fighter.name} burns for ${damage}${note}` });
   }
 }
 
@@ -160,6 +177,11 @@ function resolveItem(item: FighterItem, self: FighterState, enemy: FighterState,
   if (poison) {
     enemy.poison += poison;
     emit({ ...base, target: enemySide, kind: "poison", amount: poison, message: `${item.name} poisons ${enemy.fighter.name} (+${poison}, now ${enemy.poison})` });
+  }
+  if (item.set === "fire" && self.fighter.sets.includes("fire")) {
+    // Fire set bonus
+    enemy.burn += FIRE_BURN_STACKS;
+    emit({ ...base, target: enemySide, kind: "burn", amount: FIRE_BURN_STACKS, message: `${item.name} sets ${enemy.fighter.name} on fire (+${FIRE_BURN_STACKS} burn, now ${enemy.burn})` });
   }
   if (heal && !isDown(self)) {
     // A knocked-out fighter can't heal back up. Never heal above max HP; the log shows how much was really restored.
