@@ -1,4 +1,5 @@
-import { HERO_BASE_HP, MAX_TICKS, POISON_DAMAGE_PER_STACK, POISON_INTERVAL, TICK_SECONDS } from "./battle";
+import { BURN_DAMAGE_PER_STACK, BURN_DECAY, HERO_BASE_HP, MAX_TICKS, POISON_DAMAGE_PER_STACK, POISON_INTERVAL, TICK_SECONDS } from "./battle";
+import { SET_BONUS_MIN_ITEMS, SETS } from "./sets";
 import { GOLD_PER_ROUND, REROLL_COST, START_GOLD, START_LIVES, WINS_TO_VICTORY } from "./run";
 import { BACKPACK_COLS, BACKPACK_ROWS, SHOP_SIZE } from "./shop";
 import type { ItemEffects } from "./types";
@@ -26,6 +27,7 @@ export const STATUS_HELP = {
   hp: "HP: reaching 0 is a knockout.",
   block: EFFECT_HELP.block,
   poison: EFFECT_HELP.poison,
+  burn: `Burn: every ${TICK_SECONDS} s a burning fighter takes ${BURN_DAMAGE_PER_STACK} damage per stack (block absorbs it first), then loses ${BURN_DECAY} stack until it wears off.`,
   timer: `After ${BATTLE_SECONDS} s the fighter with the higher share of HP wins; a tie counts as your loss.`,
 };
 
@@ -66,7 +68,15 @@ export const RULES: RuleSection[] = [
     rules: [
       `☠️ ${EFFECT_HELP.poison}`,
       `💚 ${EFFECT_HELP.heal}`,
-      `Order of a tick (${TICK_SECONDS} s): first poison hurts, then items fire (your items first).`,
+      `🔥 ${STATUS_HELP.burn} Burn stacks faster and hurts more often than poison, but block stops it and it fades.`,
+      `Order of a tick (${TICK_SECONDS} s): first poison and burn hurt, then items fire (your items first).`,
+    ],
+  },
+  {
+    title: "🧩 Item sets",
+    rules: [
+      `Some items belong to a set. With ${SET_BONUS_MIN_ITEMS} or more items of a set in a backpack, its bonus is active — for opponents too.`,
+      ...Object.values(SETS).map((set) => `${set.icon} ${set.name}: ${set.bonus}`),
     ],
   },
 ];

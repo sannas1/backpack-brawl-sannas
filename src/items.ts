@@ -4,13 +4,17 @@ export const CATALOG: ItemDef[] = [
   { id: "chipped-dagger", name: "Chipped Dagger", icon: "🗡️", price: 2, cooldown: 4, effects: { damage: 3 } },
   { id: "hunting-bow", name: "Hunting Bow", icon: "🏹", price: 4, cooldown: 4, effects: { damage: 5 } },
   { id: "iron-cleaver", name: "Iron Cleaver", icon: "🪓", price: 5, cooldown: 8, effects: { damage: 12 } },
-  { id: "oak-buckler", name: "Oak Buckler", icon: "🛡️", price: 3, cooldown: 5, effects: { block: 4 } },
-  { id: "pot-lid", name: "Pot Lid", icon: "🍳", price: 2, cooldown: 3, effects: { block: 2 } },
-  { id: "spiked-shield", name: "Spiked Shield", icon: "⚔️", price: 4, cooldown: 6, effects: { damage: 3, block: 3 } },
+  { id: "oak-buckler", name: "Oak Buckler", icon: "🛡️", price: 3, cooldown: 5, effects: { block: 4 }, set: "guardian" },
+  { id: "pot-lid", name: "Pot Lid", icon: "🍳", price: 2, cooldown: 3, effects: { block: 2 }, set: "guardian" },
+  { id: "spiked-shield", name: "Spiked Shield", icon: "⚔️", price: 4, cooldown: 6, effects: { damage: 3, block: 3 }, set: "guardian" },
   // Poison items
   { id: "venom-vial", name: "Venom Vial", icon: "🧪", price: 3, cooldown: 5, effects: { poison: 2 } },
   { id: "viper-fang", name: "Viper Fang", icon: "🐍", price: 4, cooldown: 4, effects: { damage: 2, poison: 1 } },
-  { id: "toxic-spores", name: "Toxic Spores", icon: "🍄", price: 5, cooldown: 7, effects: { poison: 4 } },
+  { id: "toxic-spores", name: "Toxic Spores", icon: "🍄", price: 5, cooldown: 7, effects: { poison: 3 } },
+  // Fire set items (the burn comes from the Fire set bonus, see sets.ts)
+  { id: "fire-torch", name: "Fire Torch", icon: "🔥", price: 3, cooldown: 3, effects: { damage: 2 }, set: "fire" },
+  { id: "magma-hammer", name: "Magma Hammer", icon: "🔨", price: 5, cooldown: 5, effects: { damage: 5 }, set: "fire" },
+  { id: "fire-bomb", name: "Fire Bomb", icon: "💣", price: 4, cooldown: 7, effects: { damage: 7 }, set: "fire" },
   // Heal items
   { id: "healing-herb", name: "Healing Herb", icon: "🌿", price: 2, cooldown: 5, effects: { heal: 3 } },
   { id: "troll-blood", name: "Troll Blood", icon: "🩸", price: 4, cooldown: 6, effects: { heal: 6 } },

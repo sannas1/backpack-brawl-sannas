@@ -1,8 +1,10 @@
 import { TICK_SECONDS } from "../battle";
 import { describeEffects, getItem } from "../items";
 import { moveBlocker, sellBlocker, sellPrice } from "../run";
-import { BACKPACK_COLS } from "../shop";
+import { countSets } from "../sets";
+import { BACKPACK_COLS, itemIdsOf } from "../shop";
 import type { ItemDef, RunState } from "../types";
+import { SetBadge, SetBonusList } from "./SetBadge";
 
 /** Hover text for a backpack slot: name, effects and cooldown. */
 const tooltip = (item: ItemDef) =>
@@ -77,6 +79,7 @@ export function Backpack({ run, selected, onSelect, onSell, onMove }: BackpackPr
                       {item.icon}
                     </span>
                     <span className="text-center text-xs leading-tight">{item.name}</span>
+                    {item.set && <SetBadge set={item.set} />}
                   </>
                 )}
               </button>
@@ -84,6 +87,11 @@ export function Backpack({ run, selected, onSelect, onSell, onMove }: BackpackPr
           );
         })}
       </ul>
+
+      <div className="mt-3">
+        <h3 className="mb-1 text-sm font-bold">🧩 Set bonuses</h3>
+        <SetBonusList counts={countSets(itemIdsOf(backpack))} />
+      </div>
 
       {selected !== null && selectedItem && (
         <div className="mt-3 flex flex-col gap-2 rounded-md border border-gold/40 bg-ink/40 p-2 text-sm">
