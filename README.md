@@ -95,6 +95,7 @@ The web app runs at `http://localhost:5174`; its API runs at `http://localhost:4
 
 - `GET /api/health`
 - `GET /api/opponents?round=1`
+- `GET /api/hall-of-fame`, `POST /api/hall-of-fame`
 
 The opponent for each round is fixed. Add `?latency=2500` to change the delay (default 1200 ms, at most 5000 ms) or `?fail=true` to force a failed request. Starting the server with `API_FAIL=true` makes every opponent request fail.
 

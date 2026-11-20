@@ -9,7 +9,7 @@ import type { GameState, Opponent, Phase, RunState } from "./types";
 /**
  * Save & resume (B6).
  *
- * What is saved: the phase, the whole run (gold, lives, wins, round, seed, shop, backpack)
+ * What is saved: the run id, whether it was sent to the hall of fame, the phase, the whole run (gold, lives, wins, round, seed, shop, backpack)
  * and, during a battle, the opponent plus whether its result was already applied.
  * The battle itself is not saved: it is deterministic, so it is simulated again on load.
  *
@@ -23,12 +23,15 @@ import type { GameState, Opponent, Phase, RunState } from "./types";
 
 export const SAVE_KEY = "backpack-brawl-save";
 /** Increase when the saved shape changes; older saves are then ignored. */
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 export const SEARCH_INTERRUPTED = "Your search was interrupted by the refresh. Search again — you will meet the same challenger.";
 
 export interface SaveData {
   version: number;
+  runId: string;
+  /** Already sent to the hall of fame? Saved so a refresh can't send it twice. */
+  submitted: boolean;
   phase: Phase;
   run: RunState;
   /** Opponent of the battle being replayed (only in phase "battle"). */
@@ -40,6 +43,8 @@ export interface SaveData {
 export function toSaveData(game: GameState): SaveData {
   return {
     version: SAVE_VERSION,
+    runId: game.runId,
+    submitted: game.submitted,
     phase: game.phase,
     run: game.run,
     opponent: game.battle?.opponent ?? null,
@@ -50,9 +55,11 @@ export function toSaveData(game: GameState): SaveData {
 /** Turns saved data back into a game, or returns `null` if it is broken, incompatible or impossible. */
 export function fromSaveData(data: unknown): GameState | null {
   if (!isObject(data) || data.version !== SAVE_VERSION || !isValidRun(data.run)) return null;
+  if (typeof data.runId !== "string" || data.runId === "" || typeof data.submitted !== "boolean") return null;
   const run = data.run;
   const over = runOutcome(run) !== null;
-  const base: GameState = { phase: "shop", run, battle: null, error: null, searchId: null };
+  if (data.submitted && !over) return null; // only finished runs can be submitted
+  const base: GameState = { runId: data.runId, phase: "shop", run, battle: null, error: null, searchId: null, submitted: data.submitted };
 
   switch (data.phase) {
     case "shop":

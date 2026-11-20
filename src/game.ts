@@ -8,8 +8,8 @@ import type { BattleReplay, GameState, Opponent, RunState } from "./types";
  * Every function is pure, so they can be passed straight to `setState`.
  */
 
-export function newGame(seed: number): GameState {
-  return { phase: "shop", run: newRun(seed), battle: null, error: null, searchId: null };
+export function newGame(seed: number, runId: string = crypto.randomUUID()): GameState {
+  return { runId, phase: "shop", run: newRun(seed), battle: null, error: null, searchId: null, submitted: false };
 }
 
 /** Applies a shop/backpack action; only allowed while shopping. */
@@ -78,9 +78,15 @@ export function leaveBattle(game: GameState): GameState {
   return { ...game, phase: runOutcome(game.run) ? "finished" : "shop", battle: null };
 }
 
+/** Marks the run as sent to the hall of fame, so it is never sent again. */
+export function markSubmitted(game: GameState): GameState {
+  return game.phase === "finished" ? { ...game, submitted: true } : game;
+}
+
 /** URL paths of the app's screens. */
-export const ROUTES = { start: "/", shop: "/shop", battle: "/battle", result: "/result" } as const;
-export type GameRoute = (typeof ROUTES)[keyof typeof ROUTES];
+export const ROUTES = { start: "/", shop: "/shop", battle: "/battle", result: "/result", hallOfFame: "/hall-of-fame" } as const;
+/** Pages that follow the game phase (the hall of fame is always reachable). */
+export type GameRoute = (typeof ROUTES)["start" | "shop" | "battle" | "result"];
 
 /**
  * The screen that matches the game's phase. Shop, battle and result pages
