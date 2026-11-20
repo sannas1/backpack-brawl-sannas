@@ -73,6 +73,15 @@ export const RULES: RuleSection[] = [
     ],
   },
   {
+    title: "💾 Saving",
+    rules: [
+      "Your run is saved in this browser after every action. Refresh and you continue on the same screen.",
+      "Refresh while searching: you are back in the shop and search again. Every round has a fixed opponent, so you meet the same one.",
+      "Refresh during a battle: the result is already decided. The replay jumps to the end and the result counts.",
+      "A broken or outdated save is thrown away and you start on the start page.",
+    ],
+  },
+  {
     title: "🧩 Item sets",
     rules: [
       `Some items belong to a set. With ${SET_BONUS_MIN_ITEMS} or more items of a set in a backpack, its bonus is active — for opponents too.`,
