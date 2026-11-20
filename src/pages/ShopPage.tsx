@@ -40,16 +40,19 @@ export function ShopPage() {
   }
 
   // Once the opponent is found the phase becomes "battle" and RequireRoute redirects to the battle page.
+  // Every search gets its own id. The answer is applied only if that search is still the running one,
+  // so a slow, duplicate or late answer can never start a battle (see startBattle / searchFailed in game.ts).
   async function handleFindOpponent() {
     if (fightBlocker(game) !== null) return;
     setSelected(null);
-    update(startSearch);
+    const searchId = crypto.randomUUID();
+    update((current) => startSearch(current, searchId));
     try {
       const opponent = await fetchOpponent(run.round);
-      update((current) => startBattle(current, opponent));
+      update((current) => startBattle(current, opponent, searchId));
     } catch (error) {
       const message = error instanceof Error ? error.message : "Opponent search failed.";
-      update((current) => searchFailed(current, message));
+      update((current) => searchFailed(current, message, searchId));
     }
   }
 
