@@ -1,6 +1,6 @@
 # Backpack Brawl API
 
-The local API is a small Express server in `server/index.js`. It listens on port 4200 (override with the `PORT` environment variable). During Vite development, `/api` is proxied to it, so the frontend uses relative URLs such as `/api/opponents?round=1`. All responses are JSON. The server keeps no state: restarting it changes nothing about the answers.
+The local API is a small Express server in `server/index.js`. It listens on port 4200 (override with the `PORT` environment variable). During Vite development, `/api` is proxied to it, so the frontend uses relative URLs such as `/api/opponents?round=1`. All responses are JSON. The opponent endpoint keeps no state; only the hall of fame is stored (in memory).
 
 ## `GET /api/health`
 
@@ -76,3 +76,54 @@ Example: `API_FAIL=true pnpm server`.
 ## Client
 
 `fetchOpponent(round)` in `src/api.ts` performs the request. It resolves with the `Opponent` on success and throws an `Error` carrying the server's `error` text (or a generic message with the status code) for any non-2xx response. When the API is not running, the Vite proxy answers with an error status of its own, which is reported the same way; a network failure rejects as well.
+
+## `GET /api/hall-of-fame`
+
+Lists the best finished runs (at most 10). Entries are stored **in memory**: restarting the server empties the list.
+
+**Ranking:** victories first, then more wins, then fewer rounds; on a tie the run that was submitted first ranks higher.
+
+### Success — 200
+
+```json
+{
+  "entries": [
+    { "rank": 1, "name": "Anna", "outcome": "victory", "wins": 5, "lives": 2, "rounds": 6, "submittedAt": "2026-11-20T18:00:00.000Z" }
+  ]
+}
+```
+
+An empty hall of fame answers `{ "entries": [] }`.
+
+## `POST /api/hall-of-fame`
+
+Submits one finished run. Body (JSON):
+
+| Field | Type | Rule |
+|---|---|---|
+| `runId` | string | 1–100 characters. Unique per run; a second submission of the same `runId` is rejected. |
+| `name` | string | Trimmed, 1–20 characters, no control characters. |
+| `outcome` | `"victory"` \| `"defeat"` | |
+| `wins` | integer | 0–5 |
+| `lives` | integer | Lives left, 0–3 |
+| `rounds` | integer | Number of rounds played |
+
+**Plausibility checks** (the numbers must describe a finished run):
+
+- `victory` needs `wins = 5` and `lives ≥ 1`.
+- `defeat` needs `lives = 0` and `wins < 5`.
+- `rounds = wins + (3 − lives)`: every round is exactly one battle, won or lost.
+
+### Responses
+
+| Status | When | Body |
+|---|---|---|
+| 201 | Stored | `{ "entry": { …without rank… }, "rank": 3 }` |
+| 400 | Invalid JSON, a field fails validation or the run is implausible | `{ "error": "…" }` e.g. `"A victory needs 5 wins and at least 1 life left"` |
+| 409 | This `runId` was already submitted | `{ "error": "This run is already in the hall of fame" }` |
+
+The `runId` is never returned by the API.
+
+### Client
+
+`submitRun(submission)` and `fetchHallOfFame()` in `src/api.ts`. A 409 is thrown as `AlreadySubmittedError`, which the result page treats as "already done". The game also remembers (and saves) that the run was submitted, so the form disappears after one successful submission, even after a refresh.

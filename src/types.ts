@@ -129,6 +129,8 @@ export interface BattleReplay {
 
 /** Everything the UI needs: the run plus where in the round loop we are. */
 export interface GameState {
+  /** Unique id of this run; lets the server reject a second submission of the same run. */
+  runId: string;
   phase: Phase;
   run: RunState;
   /** Set while `phase === "battle"`. */
@@ -137,4 +139,27 @@ export interface GameState {
   error: string | null;
   /** Id of the running opponent search; only its answer may start a battle. */
   searchId: string | null;
+  /** True once this run was sent to the hall of fame. */
+  submitted: boolean;
+}
+
+/** One finished run as sent to the hall of fame. */
+export interface RunSubmission {
+  runId: string;
+  name: string;
+  outcome: "victory" | "defeat";
+  wins: number;
+  lives: number;
+  rounds: number;
+}
+
+/** One row of the hall of fame as returned by the API. */
+export interface HallOfFameEntry {
+  rank: number;
+  name: string;
+  outcome: "victory" | "defeat";
+  wins: number;
+  lives: number;
+  rounds: number;
+  submittedAt: string;
 }

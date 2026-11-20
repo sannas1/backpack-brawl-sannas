@@ -1,5 +1,6 @@
 import cors from "cors";
 import express from "express";
+import { createHallOfFame } from "./hallOfFame.js";
 import { opponentForRound, parseRound } from "./opponents.js";
 
 const app = express();
@@ -19,6 +20,22 @@ app.get("/api/opponents", (req, res) => {
     }
     res.json(opponentForRound(round));
   }, latency);
+});
+
+// Hall of fame (B7): kept in memory, so it is empty again after a server restart.
+const hallOfFame = createHallOfFame();
+
+app.get("/api/hall-of-fame", (_req, res) => res.json({ entries: hallOfFame.list() }));
+
+app.post("/api/hall-of-fame", (req, res) => {
+  const { status, body } = hallOfFame.submit(req.body);
+  res.status(status).json(body);
+});
+
+// Invalid JSON bodies get a JSON error instead of Express' HTML page.
+app.use((err, _req, res, next) => {
+  if (err.type === "entity.parse.failed") return res.status(400).json({ error: "Body must be valid JSON" });
+  next(err);
 });
 
 app.listen(port, () => console.log(`Backpack Brawl API listening on http://localhost:${port}`));

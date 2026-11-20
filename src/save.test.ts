@@ -66,6 +66,8 @@ describe("B6 save and resume", () => {
       JSON.stringify({ ...good, run: { ...good.run, wins: 3 } }), // 3 wins in round 1 is impossible
       JSON.stringify({ ...good, run: { ...good.run, backpack: [] } }),
       JSON.stringify({ ...good, run: { ...good.run, shop: ["no-such-item", null, null, null] } }),
+      JSON.stringify({ ...good, submitted: true }), // a run still in progress can't be in the hall of fame
+      JSON.stringify({ ...good, runId: 42 }),
     ];
     for (const raw of bad) {
       const storage = fakeStorage({ [SAVE_KEY]: raw });
