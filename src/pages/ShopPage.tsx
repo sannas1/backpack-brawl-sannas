@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { fetchOpponent } from "../api";
 import { Backpack } from "../components/Backpack";
 import { FightBar } from "../components/FightBar";
@@ -6,7 +6,7 @@ import { RulesPanel } from "../components/RulesPanel";
 import { RunHeader } from "../components/RunHeader";
 import { Shop } from "../components/Shop";
 import { fightBlocker, searchFailed, startBattle, startSearch, updateRun } from "../game";
-import { buyItem, rerollShop, sellItem } from "../run";
+import { buyItem, moveItem, rerollShop, sellItem } from "../run";
 import { useActiveGame } from "../state/GameContext";
 
 export function ShopPage() {
@@ -14,6 +14,17 @@ export function ShopPage() {
   const { run, phase } = game;
   /** Selected backpack slot. Only UI state, so it lives here and not in the game state. */
   const [selected, setSelected] = useState<number | null>(null);
+
+  // Escape cancels the current backpack selection.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => event.key === "Escape" && setSelected(null);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  function handleMove(from: number, to: number) {
+    update((current) => updateRun(current, (currentRun) => moveItem(currentRun, from, to)));
+  }
 
   function handleBuy(offerIndex: number) {
     update((current) => updateRun(current, (currentRun) => buyItem(currentRun, offerIndex)));
@@ -50,7 +61,7 @@ export function ShopPage() {
       {/* While searching, the whole shop/backpack area is disabled so the fighting build can't change. */}
       <fieldset disabled={phase !== "shop"} className="grid min-w-0 gap-4 disabled:opacity-60 lg:grid-cols-[1fr_16rem_18rem]">
         <Shop run={run} onBuy={handleBuy} onReroll={handleReroll} />
-        <Backpack run={run} selected={selected} onSelect={setSelected} onSell={handleSell} />
+        <Backpack run={run} selected={selected} onSelect={setSelected} onSell={handleSell} onMove={handleMove} />
         <aside className="flex flex-col gap-4">
           <RulesPanel open={run.round === 1} />
         </aside>
