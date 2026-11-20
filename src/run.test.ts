@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buyBlocker, buyItem, newRun, REROLL_COST, rerollShop, sellItem, sellPrice } from "./run";
+import { buyBlocker, buyItem, moveBlocker, moveItem, newRun, REROLL_COST, rerollShop, sellItem, sellPrice } from "./run";
 import type { RunState } from "./types";
 
 /** A run with a fixed shop so the tests don't depend on the random roll. */
@@ -51,5 +51,30 @@ describe("B1 shop economy", () => {
     expect(a.gold).toBe(run.gold - REROLL_COST);
     expect(a.seed).not.toBe(run.seed);
     expect(a.shop).toEqual(b.shop);
+  });
+});
+
+describe("B2 backpack arrangement", () => {
+  const twoItems = () => buyItem(buyItem(testRun(), 0), 2); // dagger in slot 0, pot lid in slot 1
+
+  it("moves an item to an empty slot", () => {
+    const run = moveItem(twoItems(), 0, 5);
+    expect(run.backpack[0]).toBeNull();
+    expect(run.backpack[5]?.itemId).toBe("chipped-dagger");
+  });
+
+  it("swaps two items when the target slot is occupied", () => {
+    const before = twoItems();
+    const run = moveItem(before, 0, 1);
+    expect(run.backpack[0]).toEqual(before.backpack[1]);
+    expect(run.backpack[1]).toEqual(before.backpack[0]);
+    expect(countItems(run)).toBe(2);
+  });
+
+  it("rejects moving from an empty slot, onto itself or outside the grid", () => {
+    const run = twoItems();
+    expect(moveBlocker(run, 4, 0)).toBe("Nothing to move");
+    expect(moveBlocker(run, 0, 0)).toBe("Already in this slot");
+    expect(moveItem(run, 0, 99)).toBe(run);
   });
 });

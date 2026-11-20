@@ -68,6 +68,23 @@ export function sellItem(state: RunState, slot: number): RunState {
   return { ...state, gold: state.gold + sellPrice(item.itemId), backpack };
 }
 
+/** Why the item in slot `from` can't be moved to slot `to`, or `null` if it can. */
+export function moveBlocker(state: RunState, from: number, to: number): string | null {
+  const inGrid = (slot: number) => Number.isInteger(slot) && slot >= 0 && slot < state.backpack.length;
+  if (!inGrid(from) || !inGrid(to)) return "Not a backpack slot";
+  if (!state.backpack[from]) return "Nothing to move";
+  if (from === to) return "Already in this slot";
+  return null;
+}
+
+/** Moves an item to another slot. If that slot is occupied, the two items swap places. */
+export function moveItem(state: RunState, from: number, to: number): RunState {
+  if (moveBlocker(state, from, to) !== null) return state;
+  const backpack = [...state.backpack];
+  [backpack[from], backpack[to]] = [backpack[to], backpack[from]];
+  return { ...state, backpack };
+}
+
 /** Why the shop can't be rerolled right now, or `null` if it can. */
 export function rerollBlocker(state: RunState): string | null {
   if (state.gold < REROLL_COST) return "Not enough gold to reroll";

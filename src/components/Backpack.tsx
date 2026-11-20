@@ -1,6 +1,6 @@
 import { TICK_SECONDS } from "../battle";
 import { describeEffects, getItem } from "../items";
-import { sellBlocker, sellPrice } from "../run";
+import { moveBlocker, sellBlocker, sellPrice } from "../run";
 import { BACKPACK_COLS } from "../shop";
 import type { ItemDef, RunState } from "../types";
 
@@ -14,43 +14,63 @@ interface BackpackProps {
   selected: number | null;
   onSelect: (slot: number | null) => void;
   onSell: (slot: number) => void;
+  onMove: (from: number, to: number) => void;
 }
 
-export function Backpack({ run, selected, onSelect, onSell }: BackpackProps) {
+export function Backpack({ run, selected, onSelect, onSell, onMove }: BackpackProps) {
   const { backpack } = run;
   const selectedItem = selected !== null && backpack[selected] ? getItem(backpack[selected].itemId) : null;
 
+  /** A slot is a possible move target if the selected item could be moved there. */
+  const canMoveTo = (index: number) => selected !== null && moveBlocker(run, selected, index) === null;
+
   function handleSlotClick(index: number) {
     if (index === selected) onSelect(null); // clicking the selected item again cancels
-    else if (backpack[index]) onSelect(index);
+    else if (canMoveTo(index)) {
+      onMove(selected!, index);
+      onSelect(null);
+    } else if (backpack[index]) onSelect(index);
   }
 
   return (
     <section className="rounded-lg border border-panel-edge bg-panel p-4">
       <h2 className="font-display text-xl font-bold">🎒 Backpack</h2>
-      <p className="mb-3 text-sm text-muted">Click an item to select it. Hover to see its stats.</p>
+      <p className="mb-3 text-sm text-muted">
+        {selected === null
+          ? "Click an item to select it. Hover to see its stats."
+          : "Click a marked slot to move the item there (or swap). Press Esc or Cancel to stop."}
+      </p>
       <ul className="grid gap-2" style={{ gridTemplateColumns: `repeat(${BACKPACK_COLS}, minmax(0, 1fr))` }}>
         {backpack.map((slot, index) => {
           const item = slot ? getItem(slot.itemId) : null;
           const isSelected = index === selected;
+          const isTarget = canMoveTo(index);
           return (
             <li key={slot?.uid ?? `empty-${index}`}>
               <button
                 type="button"
                 onClick={() => handleSlotClick(index)}
-                disabled={!item}
+                disabled={!item && !isTarget}
                 title={item ? tooltip(item) : undefined}
-                aria-label={item ? item.name : `Empty slot ${index + 1}`}
+                aria-label={(item ? item.name : `Empty slot ${index + 1}`) + (isTarget ? (item ? " (swap here)" : " (move here)") : "")}
                 aria-pressed={isSelected}
                 className={[
                   "flex aspect-square w-full flex-col items-center justify-center gap-1 rounded-md border-2 p-1",
+                  "relative",
                   isSelected
                     ? "border-gold bg-gold/20 ring-2 ring-gold"
-                    : item
+                    : isTarget
+                      ? "border-dashed border-block bg-block/10 hover:bg-block/25"
+                      : item
                       ? "border-gold/40 bg-ink/40 hover:border-gold"
                       : "border-dashed border-panel-edge",
                 ].join(" ")}
               >
+                {isTarget && (
+                  <span className="absolute top-0.5 right-1 text-xs font-bold text-block" aria-hidden>
+                    {item ? "🔁 swap" : "➡️ move"}
+                  </span>
+                )}
                 {item && (
                   <>
                     <span className="text-3xl leading-none sm:text-4xl" aria-hidden>
