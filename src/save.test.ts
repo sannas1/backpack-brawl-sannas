@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { newGame, startBattle, startSearch } from "./game";
 import { buyItem } from "./run";
-import { fromSaveData, loadGame, SAVE_KEY, SAVE_VERSION, saveGame, SEARCH_INTERRUPTED, toSaveData } from "./save";
+import { BATTLE_INTERRUPTED, loadGame, SAVE_KEY, SAVE_VERSION, saveGame, SEARCH_INTERRUPTED, toSaveData } from "./save";
 import type { GameState, Opponent } from "./types";
 
 /** Minimal in-memory stand-in for localStorage. */
@@ -45,12 +45,14 @@ describe("B6 save and resume", () => {
     expect(restored.error).toBe(SEARCH_INTERRUPTED);
   });
 
-  it("a refresh during a battle replay applies the result exactly once", () => {
+  it("a refresh during a battle replay counts the result exactly once", () => {
     const battle = startBattle(startSearch(readyGame(), "a"), opponent, "a");
-    expect(battle.run.wins).toBe(0);
+    expect(battle.run.wins).toBe(0); // the replay has just started
     const restored = refresh(battle)!;
-    expect(restored.phase).toBe("battle");
+    expect(restored.phase).toBe("shop"); // continue with the next round
+    expect(restored.run.round).toBe(2);
     expect(restored.run.wins).toBe(1); // the dummy is knocked out → +1 win
+    expect(restored.error).toBe(BATTLE_INTERRUPTED);
     expect(refresh(restored)!.run.wins).toBe(1); // a second refresh doesn't count it again
   });
 
@@ -74,11 +76,5 @@ describe("B6 save and resume", () => {
       expect(loadGame(storage)).toBeNull();
       expect(storage.getItem(SAVE_KEY)).toBeNull(); // broken save is removed
     }
-  });
-
-  it("rejects a battle against an opponent of another round", () => {
-    const battle = startBattle(startSearch(readyGame(), "a"), opponent, "a");
-    const data = { ...toSaveData(battle), opponent: { ...opponent, round: 4 } };
-    expect(fromSaveData(JSON.parse(JSON.stringify(data)))).toBeNull();
   });
 });

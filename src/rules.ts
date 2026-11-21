@@ -77,7 +77,7 @@ export const RULES: RuleSection[] = [
     rules: [
       "Your run is saved in this browser after every action. Refresh and you continue on the same screen.",
       "Refresh while searching: you are back in the shop and search again. Every round has a fixed opponent, so you meet the same one.",
-      "Refresh during a battle: the result is already decided. The replay jumps to the end and the result counts.",
+      "Refresh during a battle: the result is already decided and counts. You continue with the next round.",
       "A broken or outdated save is thrown away and you start on the start page.",
     ],
   },

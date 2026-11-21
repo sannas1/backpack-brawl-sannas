@@ -108,7 +108,7 @@ story = [
         ["B1 Shop economy", commit("0479e7a"), "B5 Resilient matchmaking", commit("2170c19")],
         ["B2 Backpack arrangement", commit("8c943ca"), "B6 Save and resume", commit("acb7b1d")],
         ["B3 Status effects", commit("ac3280c"), "B7 Hall of fame", commit("ac6be58")],
-        ["B4 Item sets + Burn", commit("7391804"), "Diary &amp; quality goals", commit("4b4899a")],
+        ["B4 Item sets + Burn", commit("7391804"), "Final clean-up", commit("833e542")],
     ], [4.6 * cm, 3.6 * cm, 4.6 * cm, 3.7 * cm]),
 
     # ---------------------------------------------------------------- decisions
@@ -138,14 +138,16 @@ story = [
         "new search runs. We did not use <i>AbortController</i> alone, because it cancels requests but does not protect the state "
         f"({commit('2170c19')}).", body),
 
-    Paragraph("4. Save the run, re-simulate the battle (B6)", sub),
+    Paragraph("4. Save the run after the battle (B6)", sub),
     Paragraph(
-        "We save phase, run, the opponent during a battle and whether its result was already applied – but not the battle frames. "
-        "The battle is deterministic, so it is simulated again on load. <b>Why:</b> less data to validate, and a faked result in "
-        "localStorage can never be loaded. <b>Refresh policy:</b> during a search: back to the shop (same opponent, saved shop, so no "
-        "free reroll); during a replay: jump to the end and apply the result exactly once (no escaping a loss). Saves are versioned and "
+        "We save the run id, the “submitted” flag, the phase and the run. During a battle we save the run <b>with the result already "
+        "applied</b>, not the battle itself. <b>Why:</b> a battle is decided when it starts – the replay is only an animation. So a "
+        "refresh cannot avoid a loss or count a result twice, and there is no battle data to validate. Our first version saved the "
+        f"opponent and re-simulated the battle on load ({commit('acb7b1d')}); in the final clean-up we replaced it with this simpler "
+        f"idea ({commit('833e542')}). <b>Refresh policy:</b> during a search: back to the shop (same opponent, saved shop, so no free "
+        "reroll); during a battle: the result counts and you continue with the next round, with a message. Saves are versioned and "
         "checked for a <i>possible</i> run (wins + lost lives = rounds played, gold not above all gold paid out, unique item ids); "
-        f"anything else is discarded ({commit('acb7b1d')}).", body),
+        "anything else is discarded.", body),
 
     Paragraph("5. “Never submit twice” on client and server (B7)", sub),
     Paragraph(
@@ -158,12 +160,14 @@ story = [
     bullets([
         "A fighter at 0 HP could heal back up later in the same tick – fixed: a knocked-out fighter cannot heal.",
         "Tick order with statuses: we chose “poison and burn first, then items” and explain it in the rules panel.",
+        "<b>Final clean-up:</b> we went through all requirements again and simplified code that was more complicated than needed – one "
+        f"helper for all API requests, one for the shop actions, and the simpler save idea from decision 4 ({commit('833e542')}).",
         "Adding <i>runId</i> in B7 changed the save format – we raised the save version, so old saves are ignored (the “incompatible” case of B6).",
     ]),
 
     Paragraph("Verification", sub),
     bullets([
-        "44 automated Vitest tests: shop/backpack invariants, poison/heal/burn/sets, every search race condition, broken and impossible saves, hall-of-fame validation, duplicates and ordering.",
+        "43 automated Vitest tests: shop/backpack invariants, poison/heal/burn/sets, every search race condition, broken and impossible saves, hall-of-fame validation, duplicates and ordering.",
         "Lint and TypeScript build pass; API checked by hand with curl (201 / 409 / 400); manual UI checklist in <i>docs/QUALITY.md</i>.",
     ]),
 

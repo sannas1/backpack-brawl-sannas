@@ -1,9 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router";
-import { AlreadySubmittedError, submitRun } from "../api";
+import { ApiError, submitRun } from "../api";
 import { ROUTES } from "../game";
-import type { RunOutcome } from "../run";
-import { START_LIVES } from "../run";
+import { START_LIVES, type RunOutcome } from "../run";
 import type { GameState } from "../types";
 
 const MAX_NAME_LENGTH = 20;
@@ -39,7 +38,8 @@ export function SubmitRun({ game, outcome, onSubmitted }: SubmitRunProps) {
       await submitRun({ runId: game.runId, name: name.trim(), outcome, wins: run.wins, lives: run.lives, rounds: run.round });
       onSubmitted();
     } catch (err) {
-      if (err instanceof AlreadySubmittedError) onSubmitted(); // the server already has it: nothing left to do
+      const alreadyStored = err instanceof ApiError && err.status === 409;
+      if (alreadyStored) onSubmitted(); // the server already has this run: nothing left to do
       else setError(err instanceof Error ? err.message : "Submitting failed.");
     } finally {
       setSending(false);

@@ -15,7 +15,7 @@ export function FightBar({ phase, blocker, error, onFight }: FightBarProps) {
       <div aria-live="polite">
         {error ? (
           <p role="alert" className="text-life">
-            ⚠️ {error} Try again.
+            ⚠️ {error}
           </p>
         ) : searching ? (
           <p className="animate-pulse font-bold text-gold">🔭 Searching the arena for a challenger…</p>

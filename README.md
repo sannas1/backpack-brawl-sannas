@@ -85,7 +85,7 @@ Order of one tick: poison and burn first, then items fire (player first).
 
 ### Saving
 
-The run is saved in `localStorage` after every action. Refresh during a search → back to the shop, search again (same opponent). Refresh during a battle → the replay jumps to the end and the result is applied once. Broken or outdated saves are discarded.
+The run is saved in `localStorage` after every action. Refresh during a search → back to the shop, search again (same opponent). Refresh during a battle → the battle was already decided: its result counts once and you continue with the next round (or the end screen). Broken or outdated saves are discarded.
 
 ### Hall of fame
 
@@ -107,23 +107,23 @@ Automated tests (Vitest) live next to the code they test (`src/*.test.ts`, `serv
 
 ## Run locally
 
-Requirements: Node.js 20.19+ or 22.12+ and pnpm (npm works as well; replace `pnpm` with `npm run` / `npm install`).
+Requirements: Node.js 20.19+ or 22.12+ and npm (comes with Node).
 
 ```bash
-pnpm install
-pnpm dev
+npm install
+npm run dev
 ```
 
-The web app runs at `http://localhost:5174`; its API runs at `http://localhost:4200`. During development Vite forwards every `/api` request to the API, so the frontend only ever calls relative `/api/...` URLs.
+Open the game at **`http://localhost:5174`**. The API runs at `http://localhost:4200` (opening that in the browser only shows "Cannot GET /", which is normal). During development Vite forwards every `/api` request to the API, so the frontend only ever calls relative `/api/...` URLs.
 
 | Command | Purpose |
 |---|---|
-| `pnpm dev` | Start the Vite frontend and the Express API together |
-| `pnpm server` | Start only the API on port 4200 |
-| `pnpm build` | Type-check and create a production frontend build |
-| `pnpm lint` | Run ESLint over the project |
-| `pnpm test` | Run all Vitest tests once |
-| `pnpm preview` | Preview a previously created production build |
+| `npm run dev` | Start the Vite frontend and the Express API together |
+| `npm run server` | Start only the API on port 4200 |
+| `npm run build` | Type-check and create a production frontend build |
+| `npm run lint` | Run ESLint over the project |
+| `npm run test` | Run all Vitest tests once |
+| `npm run preview` | Preview a previously created production build |
 
 ## API
 

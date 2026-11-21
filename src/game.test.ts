@@ -49,7 +49,7 @@ describe("B5 matchmaking", () => {
   it("a failed search returns to a usable shop with a message", () => {
     const failed = searchFailed(startSearch(readyGame(), "a"), "Server down.", "a");
     expect(failed.phase).toBe("shop");
-    expect(failed.error).toBe("Server down.");
+    expect(failed.error).toBe("Server down. Try again.");
     expect(fightBlocker(failed)).toBeNull(); // can try again
   });
 

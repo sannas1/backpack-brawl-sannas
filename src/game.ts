@@ -41,7 +41,7 @@ export function isCurrentSearch(game: GameState, searchId: string): boolean {
 /** A failed search unlocks the shop again and shows why, so the player can retry. */
 export function searchFailed(game: GameState, error: string, searchId: string): GameState {
   if (!isCurrentSearch(game, searchId)) return game; // a stale failure must not touch a newer state
-  return { ...game, phase: "shop", error, searchId: null };
+  return { ...game, phase: "shop", error: `${error} Try again.`, searchId: null };
 }
 
 /**

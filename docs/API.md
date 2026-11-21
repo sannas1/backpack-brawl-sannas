@@ -75,7 +75,7 @@ Example: `API_FAIL=true pnpm server`.
 
 ## Client
 
-`fetchOpponent(round)` in `src/api.ts` performs the request. It resolves with the `Opponent` on success and throws an `Error` carrying the server's `error` text (or a generic message with the status code) for any non-2xx response. When the API is not running, the Vite proxy answers with an error status of its own, which is reported the same way; a network failure rejects as well.
+`fetchOpponent(round)` in `src/api.ts` performs the request. It resolves with the `Opponent` on success and throws an `ApiError` carrying the server's `error` text (or a generic message with the status code) for any non-2xx response, a network failure, a timeout (8 s) or an answer that is not a valid opponent.
 
 ## `GET /api/hall-of-fame`
 
@@ -126,4 +126,4 @@ The `runId` is never returned by the API.
 
 ### Client
 
-`submitRun(submission)` and `fetchHallOfFame()` in `src/api.ts`. A 409 is thrown as `AlreadySubmittedError`, which the result page treats as "already done". The game also remembers (and saves) that the run was submitted, so the form disappears after one successful submission, even after a refresh.
+`submitRun(submission)` and `fetchHallOfFame()` in `src/api.ts`. All requests go through one helper (`request`) that turns every problem into an `ApiError` with a readable message and the HTTP `status`. A 409 is treated by the result page as "already done". The game also remembers (and saves) that the run was submitted, so the form disappears after one successful submission, even after a refresh.
