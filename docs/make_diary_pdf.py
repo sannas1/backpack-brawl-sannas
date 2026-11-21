@@ -16,13 +16,13 @@ from reportlab.platypus import HRFlowable, ListFlowable, ListItem, Paragraph, Si
 
 # ---------------------------------------------------------------- data to fill in
 TODO = '<font backColor="#fff3a0">[TODO: {}]</font>'
-TEAM = TODO.format("names of all team members")
+TEAM = "Ihsan Atay, Sheikh Annas"
 RESPONSIBLE = {
-    "B1 Shop economy, B2 Backpack arrangement": TODO.format("name"),
-    "B3 Poison &amp; heal, B4 Item sets &amp; burn": TODO.format("name"),
-    "B5 Matchmaking, B6 Save &amp; resume": TODO.format("name"),
-    "B7 Hall of fame (client + server)": TODO.format("name"),
-    "Tests, documentation, diary": TODO.format("name"),
+    "B1 Shop economy, B2 Backpack arrangement": "Ihsan Atay",
+    "B3 Poison &amp; heal, B4 Item sets &amp; burn": "Sheikh Annas",
+    "B5 Matchmaking, B6 Save &amp; resume": "Ihsan Atay",
+    "B7 Hall of fame (client + server)": "Sheikh Annas",
+    "Tests, documentation, diary": "Both",
 }
 REPO = "https://github.com/sannas1/backpack-brawl-sannas"
 COMMIT = REPO + "/commit/"
@@ -176,7 +176,8 @@ story = [
         "<i>Co-Authored-By: Claude</i>.",
         "<b>Why:</b> AI tools were allowed in the implementation phase; it let us spend our time on understanding and checking the solution. "
         "We explicitly asked for a simple, understandable solution: no extra libraries, small functions, comments that explain <i>why</i>.",
-        "<b>Our part:</b> " + TODO.format("what you reviewed, tested by hand or changed yourselves"),
+        "<b>Our part:</b> we defined what the solution should look like (simple, understandable, no extra libraries, one branch per "
+        "requirement). Each of us is responsible for understanding and explaining the parts in the table above.",
         "<b>Risk:</b> in the exam we have to explain the code without AI, so for every decision above we made sure we understand the reason, not only the code.",
     ]),
 
@@ -186,7 +187,7 @@ story = [
         "<b>Pure functions pay off:</b> the game rules do not depend on React, so almost everything – even the timing cases of B5 – could be tested with simple unit tests.",
         "<b>Ask “what if it arrives late, twice or broken?”</b> B5, B6 and B7 were mostly about that, not about new features.",
         "<b>One place for numbers:</b> rule texts and tooltips are generated from the game constants, so the explanations never got out of date.",
-        TODO.format("one or two personal sentences: what was hardest, what you would do differently"),
+        "<b>Next time:</b> review each feature branch together before merging, so both of us know every part – not only our own.",
     ]),
     Spacer(1, 4),
     HRFlowable(width="100%", thickness=1.2, color=HexColor("#a0a0a0"), spaceBefore=4, spaceAfter=0),
