@@ -103,7 +103,7 @@ At the end of a run you can enter your name. The page `/hall-of-fame` lists the 
 - Tooltips and a rules panel explaining every mechanic.
 - A responsive React interface styled with Tailwind CSS.
 
-Automated tests (Vitest) live next to the code they test (`src/*.test.ts`, `server/*.test.js`). Our quality goals and a manual test checklist are in [docs/QUALITY.md](docs/QUALITY.md), the development diary is [DIARY.md](DIARY.md).
+Automated tests (Vitest) live next to the code they test (`src/*.test.ts`, `server/*.test.js`). Our quality goals and a manual test checklist are in [docs/QUALITY.md](docs/QUALITY.md), the development diary is [DIARY.md](DIARY.md) (PDF: [docs/DIARY.pdf](docs/DIARY.pdf)). A technical walkthrough of every requirement (in German) is in [docs/TECHNICAL.html](docs/TECHNICAL.html).
 
 ## Run locally
 
