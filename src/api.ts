@@ -2,17 +2,39 @@ import { CATALOG } from "./items";
 import { BACKPACK_SIZE } from "./shop";
 import type { HallOfFameEntry, Opponent, RunSubmission } from "./types";
 
-/** Give up on the opponent search after this many milliseconds. */
-export const SEARCH_TIMEOUT_MS = 8000;
+/** Give up on a request after this many milliseconds. */
+export const REQUEST_TIMEOUT_MS = 8000;
 
-const knownItem = (id: unknown) => CATALOG.some((item) => item.id === id);
+/** An error from our API. `status` is the HTTP status code (0 if the server could not be reached). */
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
+/**
+ * Sends one request to the API and returns the JSON answer.
+ * Every problem (no server, timeout, error status) becomes an `ApiError` with a readable message.
+ */
+async function request(url: string, options: RequestInit = {}): Promise<unknown> {
+  let response: Response;
+  try {
+    response = await fetch(url, { ...options, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
+  } catch {
+    throw new ApiError("Could not reach the arena server.", 0);
+  }
+  const body = (await response.json().catch(() => null)) as { error?: string } | null;
+  if (!response.ok) throw new ApiError(body?.error ?? `Request failed (${response.status}).`, response.status);
+  return body;
+}
 
 /** Checks that the server's answer really is a usable opponent. */
-export function isValidOpponent(data: unknown): data is Opponent {
-  if (typeof data !== "object" || data === null) return false;
-  const o = data as Record<string, unknown>;
+function isValidOpponent(data: unknown): data is Opponent {
+  const o = data as Partial<Opponent> | null;
   return (
-    typeof o.id === "string" &&
+    typeof o?.id === "string" &&
     typeof o.name === "string" &&
     typeof o.icon === "string" &&
     typeof o.hp === "number" &&
@@ -20,63 +42,29 @@ export function isValidOpponent(data: unknown): data is Opponent {
     Number.isInteger(o.round) &&
     Array.isArray(o.items) &&
     o.items.length <= BACKPACK_SIZE &&
-    o.items.every(knownItem)
+    o.items.every((id) => CATALOG.some((item) => item.id === id))
   );
 }
 
-/** Asks the API for this round's opponent; throws an Error with an understandable message on any failure. */
+/** Asks the API for this round's opponent. */
 export async function fetchOpponent(round: number): Promise<Opponent> {
-  let response: Response;
-  try {
-    response = await fetch(`/api/opponents?round=${encodeURIComponent(round)}`, { signal: AbortSignal.timeout(SEARCH_TIMEOUT_MS) });
-  } catch (error) {
-    if (error instanceof DOMException && error.name === "TimeoutError") throw new Error("No challenger answered in time.", { cause: error });
-    throw new Error("Could not reach the arena server.", { cause: error });
-  }
-  if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as { error?: string } | null;
-    throw new Error(body?.error ?? `Opponent search failed (${response.status}).`);
-  }
-  const data: unknown = await response.json().catch(() => null);
-  if (!isValidOpponent(data)) throw new Error("The arena sent an invalid challenger.");
+  const data = await request(`/api/opponents?round=${round}`);
+  if (!isValidOpponent(data)) throw new ApiError("The arena sent an invalid challenger.", 200);
   return data;
 }
 
-/** Reads the error text of a failed response, or a generic message with the status code. */
-async function errorMessage(response: Response, fallback: string): Promise<string> {
-  const body = (await response.json().catch(() => null)) as { error?: string } | null;
-  return body?.error ?? `${fallback} (${response.status}).`;
-}
-
-/** Thrown by `submitRun` when the server already has this run (HTTP 409). */
-export class AlreadySubmittedError extends Error {}
-
-/** Sends a finished run to the hall of fame. */
+/** Sends a finished run to the hall of fame. A run that is already stored fails with status 409. */
 export async function submitRun(submission: RunSubmission): Promise<void> {
-  let response: Response;
-  try {
-    response = await fetch("/api/hall-of-fame", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(submission),
-    });
-  } catch (error) {
-    throw new Error("Could not reach the arena server.", { cause: error });
-  }
-  if (response.status === 409) throw new AlreadySubmittedError(await errorMessage(response, "Already submitted"));
-  if (!response.ok) throw new Error(await errorMessage(response, "Submitting failed"));
+  await request("/api/hall-of-fame", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(submission),
+  });
 }
 
 /** Loads the best runs. */
 export async function fetchHallOfFame(): Promise<HallOfFameEntry[]> {
-  let response: Response;
-  try {
-    response = await fetch("/api/hall-of-fame");
-  } catch (error) {
-    throw new Error("Could not reach the arena server.", { cause: error });
-  }
-  if (!response.ok) throw new Error(await errorMessage(response, "Loading the hall of fame failed"));
-  const data = (await response.json().catch(() => null)) as { entries?: HallOfFameEntry[] } | null;
-  if (!Array.isArray(data?.entries)) throw new Error("The hall of fame sent invalid data.");
+  const data = (await request("/api/hall-of-fame")) as { entries?: HallOfFameEntry[] } | null;
+  if (!Array.isArray(data?.entries)) throw new ApiError("The hall of fame sent invalid data.", 200);
   return data.entries;
 }

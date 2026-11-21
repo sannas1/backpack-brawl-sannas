@@ -4,6 +4,7 @@ import { SubmitRun } from "../components/SubmitRun";
 import { markSubmitted } from "../game";
 import { runOutcome } from "../run";
 import { useActiveGame } from "../state/GameContext";
+import { HallOfFamePage } from "./HallOfFamePage";
 
 export function ResultPage() {
   const { game, startNewRun, update } = useActiveGame();
@@ -16,6 +17,8 @@ export function ResultPage() {
       <RunHeader run={game.run} />
       <RunOver run={game.run} outcome={outcome} onNewRun={startNewRun} />
       <SubmitRun key={game.runId} game={game} outcome={outcome} onSubmitted={() => update(markSubmitted)} />
+      {/* After submitting, show the ranking right here so the player sees how the run compares. */}
+      {game.submitted && <HallOfFamePage />}
     </>
   );
 }
