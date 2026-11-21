@@ -33,6 +33,7 @@
 | B5 Resilient matchmaking | [2170c19](https://github.com/sannas1/backpack-brawl-sannas/commit/2170c19) |
 | B6 Save and resume | [acb7b1d](https://github.com/sannas1/backpack-brawl-sannas/commit/acb7b1d) |
 | B7 Hall of fame | [ac6be58](https://github.com/sannas1/backpack-brawl-sannas/commit/ac6be58) |
+| Final clean-up | [833e542](https://github.com/sannas1/backpack-brawl-sannas/commit/833e542) |
 
 ---
 
@@ -53,10 +54,11 @@ Fire items only deal normal damage. When a fighter has 2+ Fire items, every Fire
 - **Why:** before, a failed search left the game stuck in "searching", and the button could be clicked again during a search. Checking the phase alone wouldn't be enough: an old answer could arrive while a *new* search is running. The id handles this.
 - **Alternative we didn't use:** cancelling requests with `AbortController`. That makes the request stop, but it doesn't protect the state if an answer still gets through. The id check is simpler and always works.
 
-### 4. Save the run, *re-simulate* the battle (B6)
-We save phase + run (+ the opponent during a battle + "result already applied?"). We do **not** save the battle frames. On load the battle is simulated again, which is possible because the simulation is deterministic.
-- **Why:** less data to store and to validate. A faked battle result in localStorage can't be loaded, because the result is always recomputed.
-- **Refresh policy:** during a search → back to the shop (same opponent per round, shop is saved → no free reroll). During a replay → jump to the end and apply the result exactly once (no escaping a loss). This is explained in the rules panel ("💾 Saving").
+### 4. Save the run *after* the battle (B6)
+We save the run id, the "submitted" flag, the phase and the run. During a battle we save the run **with the result already applied** (`skipReplay(game).run`), not the battle itself.
+- **Why:** a battle is decided the moment it starts, the replay is only an animation. Saving the "after" state means a refresh can't avoid a loss or count a result twice, and there is no battle data to store or validate.
+- **First version vs. final version:** at first we saved the opponent and re-simulated the battle on load ([acb7b1d](https://github.com/sannas1/backpack-brawl-sannas/commit/acb7b1d)). It worked, but needed extra fields and checks. In the final clean-up we replaced it with the simpler idea above ([833e542](https://github.com/sannas1/backpack-brawl-sannas/commit/833e542)).
+- **Refresh policy:** during a search → back to the shop (same opponent per round, shop is saved → no free reroll). During a battle → the result counts and you continue with the next round (or the end screen), with a message. This is explained in the rules panel ("💾 Saving").
 - **Validation:** besides types and ranges, we check that the numbers describe a *possible* run: `wins + lives lost = rounds played`, gold not higher than all gold ever paid out, unique item ids. Anything else is discarded.
 
 ### 5. "Never submit twice" on the client *and* the server (B7)
@@ -70,13 +72,14 @@ Each run gets a `runId`. The server rejects a second submission of the same id (
 
 - **Heal after knockout:** in the first version a fighter at 0 HP could heal back up later in the same tick and survive. Fixed: a knocked-out fighter can't heal.
 - **Tick order with statuses:** we had to decide when poison/burn happen. We chose "statuses first, then items" and wrote it in the rules panel and as a comment above `simulateBattle`.
+- **Final clean-up:** at the end we went through all requirements again and simplified code that was more complicated than needed: one helper for all API requests, one helper for the shop actions, and the simpler save idea from decision 4 ([833e542](https://github.com/sannas1/backpack-brawl-sannas/commit/833e542)).
 - **Save format changed in B7:** adding `runId`/`submitted` changed the saved shape. We raised `SAVE_VERSION` to 2, so old saves are simply ignored. This is the "incompatible save" case from B6.
 
 ---
 
 ## Verification
 
-- **44 automated tests** (Vitest): shop/backpack invariants, poison/heal/burn/sets, every search race condition, broken/impossible saves, hall-of-fame validation, duplicates and ordering. Run with `npm test`.
+- **43 automated tests** (Vitest): shop/backpack invariants, poison/heal/burn/sets, every search race condition, broken/impossible saves, hall-of-fame validation, duplicates and ordering. Run with `npm test`.
 - `npm run lint` and `npm run build` (TypeScript type check) pass.
 - API checked by hand with curl (valid run → 201, same run → 409, impossible run → 400, broken JSON → 400).
 - Manual checklist for the UI: see [docs/QUALITY.md](docs/QUALITY.md).
