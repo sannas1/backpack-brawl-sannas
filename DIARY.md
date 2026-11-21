@@ -1,6 +1,6 @@
 # Development Diary – Backpack Brawl
 
-**Team members:** _[TODO: names]_
+**Team members:** Ihsan Atay, Sheikh Annas
 **Repository:** https://github.com/sannas1/backpack-brawl-sannas
 
 ---
@@ -12,15 +12,15 @@
 - We did **one branch per requirement** (`feature/b1-…` to `feature/b7-…`), one clear commit per feature, and merged each branch into `master` with a merge commit. That way every requirement can be found in the history.
 - Order: B1 → B2 (both shop/backpack) → B3 → B4 (both battle) → B5 → B6 → B7 (network and saving). Every step ended with `npm test`, `npm run lint` and `npm run build` passing before the merge.
 
-**Who did what** _[TODO: fill in who is responsible for / can best explain which part]_
+**Who did what**
 
 | Part | Responsible |
 |---|---|
-| B1 Shop economy, B2 Backpack | _[name]_ |
-| B3 Poison/Heal, B4 Sets/Burn | _[name]_ |
-| B5 Matchmaking, B6 Save/Resume | _[name]_ |
-| B7 Hall of fame (client + server) | _[name]_ |
-| Tests, docs, diary | _[name]_ |
+| B1 Shop economy, B2 Backpack | Ihsan Atay |
+| B3 Poison/Heal, B4 Sets/Burn | Sheikh Annas |
+| B5 Matchmaking, B6 Save/Resume | Ihsan Atay |
+| B7 Hall of fame (client + server) | Sheikh Annas |
+| Tests, docs, diary | Both |
 
 **Requirements not implemented:** none. All of B1–B7 and the quality goals ([docs/QUALITY.md](docs/QUALITY.md)) are done.
 
@@ -88,7 +88,7 @@ Each run gets a `runId`. The server rejects a second submission of the same id (
 - **Tool:** Claude Code (Anthropic, model Claude Opus 5.5), used as a coding agent in the terminal.
 - **How:** we gave it the starter repository and the requirements. It read the existing code, then implemented the requirements one by one on separate branches, wrote the tests and drafted the documentation and this diary. Commits it made are marked with `Co-Authored-By: Claude`.
 - **Why:** AI tools were allowed for the implementation phase, and it let us spend our time on understanding and checking the solution instead of typing.
-- **Our part:** we asked for a simple, understandable solution (no extra libraries, small functions, comments explaining *why*). _[TODO: describe what you reviewed or changed yourselves, e.g. tested the UI by hand, adjusted values, asked for explanations of B5/B6.]_
+- **Our part:** we defined what the solution should look like (simple, understandable, no extra libraries, small functions, comments explaining *why*, one branch per requirement). Each of us is responsible for understanding and explaining the parts in the table above.
 - **Risk we are aware of:** in the exam we have to explain the code without AI. So for every decision above we made sure we understand the *reason*, not only the code.
 
 ---
@@ -98,4 +98,4 @@ Each run gets a `runId`. The server rejects a second submission of the same id (
 - **Pure functions pay off:** because the rules don't depend on React, almost everything could be tested with simple unit tests, including the tricky timing cases of B5.
 - **Think about "what if this arrives late / twice / broken?"** B5, B6 and B7 were mostly about that, not about new features.
 - **One place for numbers:** generating the rule texts from constants meant the explanations never got out of date when we changed values.
-- _[TODO: one or two personal sentences: what was hardest for you, what you would do differently.]_
+- **Next time:** review each feature branch together before merging, so both of us know every part, not only our own.
