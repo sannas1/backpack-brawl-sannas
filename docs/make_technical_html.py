@@ -100,7 +100,7 @@ def section(id_, title, weight, branch, commits, requirement, before, how, why, 
 
 # ---------------------------------------------------------------- content
 B1 = section(
-    "b1", "B1 – Shop-Ökonomie", "10 %", "feature/b1-shop-economy", ["0479e7a"],
+    "b1", "B1 – Shop-Ökonomie", "10 %", "feature/b1-shop-economy", ["d7171e4"],
     "Items für den halben Preis (abgerundet) verkaufen, Shop für 1 🪙 neu würfeln. Gold nie negativ, kein Item geht verloren oder "
     "wird verdoppelt, jede Aktion passiert ganz oder gar nicht. Die Oberfläche sagt <i>vorher</i>, warum etwas nicht geht – und dieselbe "
     "Regel schützt die Aktion selbst. Nur im Shop möglich.",
@@ -141,7 +141,7 @@ B1 = section(
 )
 
 B2 = section(
-    "b2", "B2 – Rucksack sortieren", "15 %", "feature/b2-backpack-arrangement", ["8c943ca"],
+    "b2", "B2 – Rucksack sortieren", "15 %", "feature/b2-backpack-arrangement", ["9b87920"],
     "Item auswählen (sichtbar markiert), auf einen anderen Platz verschieben; auf einem belegten Platz werden die beiden getauscht. "
     "Die Oberfläche zeigt, welche Züge möglich sind, und man kann abbrechen.",
     "<p>Die Rucksack-Felder waren nur Anzeige-Elemente (<code>&lt;li&gt;</code>), nicht klickbar. Ein gekauftes Item blieb für immer auf "
@@ -174,7 +174,7 @@ B2 = section(
 )
 
 B3 = section(
-    "b3", "B3 – Statuseffekte Gift &amp; Heilung", "15 %", "feature/b3-status-effects", ["ac3280c"],
+    "b3", "B3 – Statuseffekte Gift &amp; Heilung", "15 %", "feature/b3-status-effects", ["4a2cef4"],
     "<b>Poison</b> gibt dem Gegner Stapel; ein vergifteter Kämpfer verliert regelmäßig HP pro Stapel, Gift stapelt sich und ignoriert "
     "Block. <b>Heal</b> heilt sich selbst, nie über die max. HP. Mindestens 3 Items pro Effekt, im Shop erhältlich, Gegner dürfen sie "
     "nutzen. Anzeige im Kampf, Kampflog, Regel-Panel und Tooltips; Werte deterministisch und erklärt.",
@@ -216,7 +216,7 @@ B3 = section(
 )
 
 B4 = section(
-    "b4", "B4 – Item-Sets &amp; Burn", "20 %", "feature/b4-item-sets", ["7391804"],
+    "b4", "B4 – Item-Sets &amp; Burn", "20 %", "feature/b4-item-sets", ["2ac8ae3"],
     "Mindestens 2 Sets (eins davon <b>Fire</b>) mit je mindestens 3 Items. Bonus ab 2 Items, für Spieler und Gegner. Set-Badges im Shop "
     "und im Kampf, aktive Boni sichtbar. Fire bringt den neuen Status <b>Burn</b>: stapelt schneller und macht mehr Schaden als Gift, "
     "wird von Block abgefangen und klingt ab.",
@@ -261,7 +261,7 @@ B4 = section(
 )
 
 B5 = section(
-    "b5", "B5 – Zuverlässige Gegnersuche", "10 %", "feature/b5-matchmaking", ["2170c19", "833e542"],
+    "b5", "B5 – Zuverlässige Gegnersuche", "10 %", "feature/b5-matchmaking", ["dfce2d2", "66d553c"],
     "Während der Suche sieht man, dass gesucht wird, und kann keine zweite starten. Bei Fehler/nicht erreichbarer API zurück in einen "
     "benutzbaren Shop mit verständlicher Meldung und neuem Versuch. Ein Kampf startet nur für die aktuelle Runde und die aktuelle Suche; "
     "langsame, doppelte oder späte Antworten dürfen nie einen Kampf (neu) starten oder ein Ergebnis doppelt anwenden.",
@@ -300,7 +300,7 @@ B5 = section(
 )
 
 B6 = section(
-    "b6", "B6 – Speichern &amp; Fortsetzen", "10 %", "feature/b6-save-resume", ["acb7b1d", "833e542"],
+    "b6", "B6 – Speichern &amp; Fortsetzen", "10 %", "feature/b6-save-resume", ["3274175", "66d553c"],
     "Browser neu laden und den Run auf dem passenden Bildschirm fortsetzen. Kaputte, inkompatible oder unmögliche Spielstände dürfen das "
     "Spiel nicht kaputt machen. Eine eigene Regel für Refresh während Suche oder Kampf – Refresh darf kein Gratis-Reroll, kein anderer Gegner, "
     "kein zweites Ergebnis und kein Ausweichen vor einer Niederlage sein.",
@@ -322,7 +322,7 @@ B6 = section(
     "Gold nie mehr als je ausgezahlt; Item-IDs eindeutig und bekannt. Alles andere → Spielstand löschen, Startseite.</li>"
     "<li><b>Versionsnummer:</b> Ändert sich das Speicherformat, wird <code>SAVE_VERSION</code> erhöht; alte Stände gelten als inkompatibel.</li>"
     "<li><b>Erste Version → Endversion:</b> Zuerst wurde der Gegner gespeichert und der Kampf beim Laden neu simuliert "
-    f"({commit('acb7b1d')}). Beim Aufräumen ({commit('833e542')}) wurde das durch die einfachere Idee oben ersetzt: weniger Felder, "
+    f"({commit('3274175')}). Beim Aufräumen ({commit('66d553c')}) wurde das durch die einfachere Idee oben ersetzt: weniger Felder, "
     "weniger Prüfungen, gleiches Ergebnis.</li></ul>",
     code_box("src/save.ts", r"export function toSaveData", note="Während eines Kampfes: Stand NACH dem Kampf speichern")
     + code_box("src/save.ts", r"export function fromSaveData", note="Laden + Refresh-Regeln")
@@ -341,7 +341,7 @@ B6 = section(
 )
 
 B7 = section(
-    "b7", "B7 – Hall of Fame", "20 %", "feature/b7-hall-of-fame", ["ac6be58", "833e542"],
+    "b7", "B7 – Hall of Fame", "20 %", "feature/b7-hall-of-fame", ["cf66c5f", "66d553c"],
     "Am Ende des Runs Namen eingeben und sehen, wie der Run im Vergleich steht. Die lokale API speichert und listet die besten Runs "
     "(eigene Sortierung, angezeigt), prüft jeden Run und lehnt ungültige/unplausible Daten mit klarer Meldung ab. UI: Lade-, Leer- und "
     "Fehlerzustand, erneut senden ohne neu tippen, nie doppelt senden. Eigene Seite, Endpunkte in <code>docs/API.md</code>.",
@@ -400,7 +400,7 @@ QUALITY = """
 
 CLEANUP = f"""
 <section id="cleanup">
-  <h2>Finales Aufräumen {commit('833e542')}</h2>
+  <h2>Finales Aufräumen {commit('66d553c')}</h2>
   <p>Am Ende wurden alle Anforderungen nochmal geprüft und Code, der komplizierter war als nötig, vereinfacht:</p>
   <table class="files">
     <tr><th>Vorher</th><th>Nachher</th><th>Warum</th></tr>
@@ -443,13 +443,13 @@ OVERVIEW = f"""
   <h3>Übersicht</h3>
   <table class="files">
     <tr><th>Anf.</th><th>Gewicht</th><th>Haupt-Dateien</th><th>Commit</th><th>Tests</th></tr>
-    <tr><td><a href="#b1">B1</a> Shop-Ökonomie</td><td>10 %</td><td><code>run.ts</code>, <code>Shop.tsx</code></td><td>{commit('0479e7a')}</td><td>6</td></tr>
-    <tr><td><a href="#b2">B2</a> Rucksack</td><td>15 %</td><td><code>run.ts</code>, <code>Backpack.tsx</code></td><td>{commit('8c943ca')}</td><td>3</td></tr>
-    <tr><td><a href="#b3">B3</a> Gift &amp; Heilung</td><td>15 %</td><td><code>battle.ts</code>, <code>items.ts</code></td><td>{commit('ac3280c')}</td><td>4</td></tr>
-    <tr><td><a href="#b4">B4</a> Sets &amp; Burn</td><td>20 %</td><td><code>sets.ts</code>, <code>battle.ts</code></td><td>{commit('7391804')}</td><td>4</td></tr>
-    <tr><td><a href="#b5">B5</a> Gegnersuche</td><td>10 %</td><td><code>game.ts</code>, <code>api.ts</code></td><td>{commit('2170c19')}</td><td>9</td></tr>
-    <tr><td><a href="#b6">B6</a> Speichern</td><td>10 %</td><td><code>save.ts</code>, <code>GameProvider.tsx</code></td><td>{commit('acb7b1d')}</td><td>4</td></tr>
-    <tr><td><a href="#b7">B7</a> Hall of Fame</td><td>20 %</td><td><code>server/hallOfFame.js</code>, <code>SubmitRun.tsx</code></td><td>{commit('ac6be58')}</td><td>12</td></tr>
+    <tr><td><a href="#b1">B1</a> Shop-Ökonomie</td><td>10 %</td><td><code>run.ts</code>, <code>Shop.tsx</code></td><td>{commit('d7171e4')}</td><td>6</td></tr>
+    <tr><td><a href="#b2">B2</a> Rucksack</td><td>15 %</td><td><code>run.ts</code>, <code>Backpack.tsx</code></td><td>{commit('9b87920')}</td><td>3</td></tr>
+    <tr><td><a href="#b3">B3</a> Gift &amp; Heilung</td><td>15 %</td><td><code>battle.ts</code>, <code>items.ts</code></td><td>{commit('4a2cef4')}</td><td>4</td></tr>
+    <tr><td><a href="#b4">B4</a> Sets &amp; Burn</td><td>20 %</td><td><code>sets.ts</code>, <code>battle.ts</code></td><td>{commit('2ac8ae3')}</td><td>4</td></tr>
+    <tr><td><a href="#b5">B5</a> Gegnersuche</td><td>10 %</td><td><code>game.ts</code>, <code>api.ts</code></td><td>{commit('dfce2d2')}</td><td>9</td></tr>
+    <tr><td><a href="#b6">B6</a> Speichern</td><td>10 %</td><td><code>save.ts</code>, <code>GameProvider.tsx</code></td><td>{commit('3274175')}</td><td>4</td></tr>
+    <tr><td><a href="#b7">B7</a> Hall of Fame</td><td>20 %</td><td><code>server/hallOfFame.js</code>, <code>SubmitRun.tsx</code></td><td>{commit('cf66c5f')}</td><td>12</td></tr>
   </table>
   <p>Prüfen: <code>npm test</code> (alle Tests), <code>npm run lint</code>, <code>npm run build</code>. Spiel starten: <code>npm run dev</code> → <code>http://localhost:5174</code>.</p>
 </section>
